@@ -57,6 +57,11 @@ public class Deck {
 		cardsUsed++;
 		return cards[cardsUsed - 1];
 	}
+
+	public Card[] getCards() {
+		// TODO Auto-generated method stub
+		return cards;
+	}
 	
 	// TODO: something to do with kiddy
 	

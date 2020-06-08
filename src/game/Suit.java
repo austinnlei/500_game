@@ -1,11 +1,11 @@
 package game;
 
 public enum Suit {
-	HEARTS(4, "Hearts", "Red"),
-	SPADES(2, "Spades", "Black"),
-	DIAMONDS(3, "Diamonds", "Red"),
-	CLUBS(1, "Clubs", "Black"),
-	TRUMPSUIT(5, "Trump", "Trump");
+	HEARTS(4, "hearts", "Red"),
+	SPADES(2, "spades", "Black"),
+	DIAMONDS(3, "diamonds", "Red"),
+	CLUBS(1, "clubs", "Black"),
+	TRUMPSUIT(5, "trump", "Trump");
 	
 	private final int order;
 	private final String name;
@@ -27,5 +27,9 @@ public enum Suit {
 
 	public int getOrder() {
 		return order;
+	}
+	
+	public String toString() {
+		return name;
 	}
 }

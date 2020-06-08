@@ -6,66 +6,130 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
+
 public class Round {
 	
 	private Game game;
 	private Deck deck;
 	private Suit trumpSuit;
+	private SimpleStringProperty trumpSuitString;
 	private List<Card> kitty;
 	private Player betWinner;
 	private Bet currBet;
+	private SimpleStringProperty currBetString;
+	private SimpleStringProperty currStartingSuitString;
 	private Trick[] tricks;
 	private Player[] betOrder;
 	private Player[] currOrder;
+	private int currTrick;
+	private int currBetter;
+	private HumanPlayer gamePlayer;
+	private List<Player> passedBetPlayers;
+	private SimpleBooleanProperty bettingRound;
+	private SimpleBooleanProperty kittyRound;
+	private SimpleBooleanProperty tricksRound;
 	
-	public Round(Game game, Deck deck, Player[] betOrder) {
+	public Round(Game game, Deck deck, HumanPlayer gamePlayer) {
 		this.game = game;
 		this.deck = deck;
+		this.gamePlayer = gamePlayer;
+		this.trumpSuitString = new SimpleStringProperty("None");
+		this.currBetString = new SimpleStringProperty("None");
+		this.currStartingSuitString = new SimpleStringProperty("None");
+		this.bettingRound = new SimpleBooleanProperty(false);
+		this.kittyRound = new SimpleBooleanProperty(false);
+		this.tricksRound = new SimpleBooleanProperty(false);
+		initialize();
+	}
+	
+	public void initialize() {
 		this.trumpSuit = null;
-		this.kitty = null;
 		this.betWinner = null;
 		this.currBet = null;
 		this.tricks = new Trick[10];
-		this.betOrder = betOrder;
+		this.betOrder = game.getBetOrder();
 		this.currOrder = new Player[4];
-		
+		this.currTrick = 0;
+		this.currBetter = 0;		
+		this.passedBetPlayers = new ArrayList<>();
+		this.kitty = new ArrayList<>();
+		this.trumpSuitString.set("None");
+		this.currBetString.set("None");
+		this.currStartingSuitString.set("None");
+		this.bettingRound.set(false);
+		this.kittyRound.set(false);
+		this.tricksRound.set(false);
+
 	}
 	
+	public SimpleStringProperty getTrumpSuitString() {
+		return trumpSuitString;
+	}
+
+	public SimpleStringProperty getCurrBetString() {
+		return currBetString;
+	}
+
+	public SimpleStringProperty getCurrStartingSuitString() {
+		return currStartingSuitString;
+	}
+
+	public void reset() {
+		initialize();
+	}
+	
+	public SimpleBooleanProperty getBettingRound() {
+		return bettingRound;
+	}
+
+	public void setBettingRound(SimpleBooleanProperty bettingRound) {
+		this.bettingRound = bettingRound;
+	}
+
+	public SimpleBooleanProperty getKittyRound() {
+		return kittyRound;
+	}
+
+	public void setKittyRound(SimpleBooleanProperty kittyRound) {
+		this.kittyRound = kittyRound;
+	}
+
+	public SimpleBooleanProperty getTricksRound() {
+		return tricksRound;
+	}
+
+	public void setTricksRound(SimpleBooleanProperty tricksRound) {
+		this.tricksRound = tricksRound;
+	}
+
 	public Suit getTrumpSuit() {
 		// TODO Auto-generated method stub
 		return trumpSuit;
 	}
 	public int getCurrBetSize() {
-		return currBet.getBet();
+		return (currBet == null) ? 0:getCurrBet().getBet();
 	}
 	public int getCurrBetOrder() {
 		return currBet.getOrder();
 	}
-	public void setBet(Bet bet) {
-		this.currBet = bet;
-		
-	}
+
 	public Bet getCurrBet() {
 		// TODO Auto-generated method stub
 		return currBet;
 	}
 	
-	// TODO: when you figure this out - compare with bet and probs return a map of team with scores to be updated
-	public void determineWinner() {
-		
-	}
-	
-	public List<Card> dealCards() {
+	public void dealCards() {
 		for (int i = 0; i < 10; i++) {
 			for (int j = 0; j < 4; j++) {
 				betOrder[j].addCard(deck.dealCard());
 			}
 		}
-		List<Card> kitty = new ArrayList<>();
 		for (int i = 0; i < 3; i++) {
 			kitty.add(deck.dealCard());
 		}
-		return kitty;
+
 	}
 	
 	public void changeOrder(Player player) {
@@ -75,45 +139,18 @@ public class Round {
 		}
 	}
 	
-	public void playTricks() {
-		for (int i = 0; i < 10; i++) {
-			tricks[i] = new Trick(this, currOrder);
-			tricks[i].start();
-			changeOrder(tricks[i].getWinner());
-		}
+
+	private void convertFromTrumpSuit() {
+		for (int i = 0; i < 43; i++) {
+			deck.getCards()[i].convertFromTrumpSuit();
+		}		
 	}
-	
-	public void doBets() {
-		List<Player> passedPlayers = new ArrayList<>();
-		while(true) {
-			for (int i = 0; i < 4; i++) {
-				if (passedPlayers.contains(betOrder[i])) continue;
-				currBet = betOrder[i].makeBet();
-				if (currBet != null) {
-					betWinner = betOrder[i];
-				} else {
-					passedPlayers.add(betOrder[i]);
-					if (passedPlayers.size() == 3) break;
-				}
-			}
-			if (passedPlayers.size() == 3) break;
+
+	private void convertToTrumpSuit(Suit trumpSuit) {
+		for (int i = 0; i < 43; i++) {
+			deck.getCards()[i].convertToTrumpSuit(trumpSuit);
 		}
-	}
-	
-	public void start() {
-		// deal cards
-		List<Card> kitty = dealCards();
-		// do betting round
-		doBets();
-		// do kitty changes
-		betWinner.selectHandWithKitty(kitty);
-		changeOrder(this.betWinner);
-		// start loop for trick playing
-		playTricks();
 		
-		// count all the trick winners, determine scores to send back to game
-		Map<Team, Integer> roundScores = calculateRoundScores();
-		game.finishRound(roundScores);
 	}
 
 	public Map<Team, Integer> calculateRoundScores() {
@@ -149,6 +186,85 @@ public class Round {
 		if (num < getCurrBetSize()) return false;
 		if (num == getCurrBetSize() && suit.getOrder() <= getCurrBetOrder()) return false;
 		return true;
+	}
+	
+	public void incrementBetter() {
+		currBetter = (currBetter + 1)%4;
+	}
+	
+	public void changeTrumpSuit(Suit suit) {
+		trumpSuit = suit;
+		trumpSuitString.set(trumpSuit.toString());
+
+	}
+	
+	public boolean CPUPlayToHumanInput() {
+		System.out.println("FIrst to bet is: " + betOrder[0]);
+		if (trumpSuit == null) {
+			this.bettingRound.set(true);
+			for (int i = currBetter; i < 4; i = (i+1)%4) {
+				if (passedBetPlayers.size() == 3) break;
+				incrementBetter();
+				if (passedBetPlayers.contains(betOrder[i])) continue;
+				if(betOrder[i].equals(gamePlayer)) return true;
+				betOrder[i].makeBet();
+			}
+			changeTrumpSuit(currBet.getSuit());
+			betWinner = currBet.getPlayer();
+			convertToTrumpSuit(trumpSuit);
+			addKittyToWinnerHand();
+			this.bettingRound.set(false);
+		}
+		if (betWinner.getCards().size() > 10) {
+			this.kittyRound.set(true);
+			changeOrder(this.betWinner);
+			if (betWinner.equals(gamePlayer)) return true;
+			betWinner.discardCard();
+		}
+		gamePlayer.resetSelectedCard();
+		if (currTrick < 10) {
+			this.kittyRound.set(false);
+			this.tricksRound.set(true);
+			if (tricks[currTrick] == null) createNewTrick();
+			if (!tricks[currTrick].CPUPlayToHumanInput()) return true;
+			changeOrder(tricks[currTrick].getWinner());
+			currTrick++;
+			this.tricksRound.set(false);
+			return false;
+		}
+		
+		Map<Team, Integer> roundScores = calculateRoundScores();
+		convertFromTrumpSuit();
+		game.updateScores(roundScores);
+		return false;
+	}
+	
+	public void addKittyToWinnerHand() {
+		betWinner.getCards().addAll(kitty);
+	}
+	
+	public void createNewTrick() {
+		tricks[currTrick] = new Trick(this, gamePlayer, currOrder);
+		updatePlayerTricks();
+	}
+	
+	public void updatePlayerTricks() {
+		for (int i = 0; i < 4; i++) betOrder[i].updateNewTrick(tricks[currTrick]);
+	}
+
+	public void setCurrBet(Bet bet) {
+		currBet = bet;
+		currBetString.set(currBet.toString());
+		
+	}
+
+	public void addPassedBetPlayers(Player player) {
+		passedBetPlayers.add(player);
+		
+	}
+
+	public void updateStartingSuitString(Suit startingSuit) {
+		currStartingSuitString.set(startingSuit.toString());
 	}
 	
 	

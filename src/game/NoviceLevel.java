@@ -40,9 +40,8 @@ public class NoviceLevel implements SkillLevel {
 	}
 	
 	@Override
-	public void selectNewHandAfterKitty(Hand originalHand, List<Card> kitty) {
-		for (Card c: kitty) originalHand.addCard(c);
-		Collections.sort(originalHand.getCards(), new CardComparator());
-		originalHand.removeFirstThreeCards();
+	public void selectNewHandAfterKitty(Hand hand) {
+		Collections.sort(hand.getCards(), new CardComparator());
+		hand.removeFirstThreeCards();
 	}
 }

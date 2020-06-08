@@ -65,20 +65,32 @@ public class CPUPlayer extends Player {
 		Map<Suit, Integer> suitDict = getSuitNum();
 		return Collections.max(suitDict.entrySet(), Map.Entry.comparingByValue()).getValue();
 	}
-
+	
+	public Card selectCardToPlay() {
+		if (!checkCardPlay(level.selectCard(this))) System.out.println("Error with card play algorithm");
+		return level.selectCard(this);
+	}
+	
 	@Override
-	public Bet makeBet() {
-		return level.selectBet(this);
+	public void makeBet() {
+		Bet CPUBet = level.selectBet(this);
+		if (CPUBet == null) getCurrRound().addPassedBetPlayers(this);
+		else getCurrRound().setCurrBet(CPUBet);
+
+	}
+	
+	@Override
+	public void discardCard() {
+		level.selectNewHandAfterKitty(getHand());
 	}
 
 	@Override
-	public void selectHandWithKitty(List<Card> kitty) {
-		level.selectNewHandAfterKitty(getHand(), kitty);
+	public boolean playCard() {
+		Card cardToPlay = level.selectCard(this);
+		getHand().removeCard(cardToPlay);
+		setCurrPlayedCard(cardToPlay);
+		getCurrTrick().cardPlayed(cardToPlay);
+		return true;
 	}
 
-	@Override
-	public Card playCard() {
-		if (checkCardPlay(level.selectCard(this))) return level.selectCard(this);
-		return null;
-	}
 }

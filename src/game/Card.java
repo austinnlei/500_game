@@ -5,6 +5,8 @@ public class Card {
 	private Value value;
 	private boolean isFaceUp;
 	private boolean isTrumpSuit;
+	private final String[] highCards = {"jack", "queen", "king", "ace", "jack", "jack", "joker"};
+
 	
 	public Card(Suit suit, Value value) {
 		this.suit = suit;
@@ -53,10 +55,20 @@ public class Card {
 			if (this.value == value.TRUMPJACK || this.value == value.ALTTRUMPJACK) this.value = value.JACK;
 		}
 	}
+	
+	public boolean isTrump() {
+		return isTrumpSuit;
+	}
 
 	public int getSuitOrder() {
 		// TODO Auto-generated method stub
 		return suit.getOrder();
+	}
+	
+	public String toString() {
+		if (getValue() == 0) return "0s";
+		if (getValue() > 10) return highCards[getValue()-11] + " of " + suit; 
+		return getValue() + " of " + suit;
 	}
 	
 	

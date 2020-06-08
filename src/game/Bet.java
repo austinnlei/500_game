@@ -62,4 +62,8 @@ public class Bet {
 	public int getOrder() {
 		return suit.getOrder();
 	}
+	@Override
+	public String toString() {
+		return player.toString() + ": " + bet + " - " + suit;
+	}
 }

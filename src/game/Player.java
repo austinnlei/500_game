@@ -2,25 +2,41 @@ package game;
 
 import java.util.List;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
+
 public abstract class Player {
 	
 	private String name;
 	private Game currGame;
 	private Round currRound;
 	private Trick currTrick;
+	private Card currPlayedCard;
 	private Hand hand;
 	private Team team;
 	
 	public Player(String name, Game game, Team team) {
 		this.name = name;
 		currGame = game;
+		this.team = team;
+		
+		initialise();
+	}
+	
+	public String getName() {
+		return name;
+	}
+
+	public void initialise() {
 		currRound = null;
 		currTrick = null;
-		hand = null;
-		team = null;
+		currPlayedCard = null;
+		this.hand = new Hand();
+		
 	}
 	
 	public void addCard(Card card) {
+
 		this.hand.addCard(card);
 	}
 	
@@ -37,13 +53,6 @@ public abstract class Player {
 		}
 		return true;
 	}
-	
-	public boolean bet(Suit suit, int bet) {
-		
-		currRound.setBet(new Bet(this, suit, bet));
-		return true;
-	}
-	
 
 	
 
@@ -80,13 +89,51 @@ public abstract class Player {
 		return currRound;
 	}
 	
-	public abstract Bet makeBet();
-	public abstract void selectHandWithKitty(List<Card> kitty);
-	public abstract Card playCard();
+	public abstract void makeBet();
+	public abstract boolean playCard();
+	public abstract void discardCard();
 
 	public Team getTeam() {
 		// TODO Auto-generated method stub
-		return null;
+		return team;
+	}
+
+
+	public void updateNewTrick(Trick trick) {
+		this.currTrick = trick;
+		this.currPlayedCard = null;
+		
+	}
+	
+	public void setCurrRound(Round round) {
+		this.currRound = round;
+		this.currPlayedCard = null;
+		
+	}
+	
+	public void setCurrPlayedCard(Card c) {
+		this.currPlayedCard = c;
+	}
+	
+	public Card getCurrPlayedCard() {
+		return this.currPlayedCard;
+	}
+	
+	public Trick getCurrTrick() {
+		return currTrick;
+	}
+
+	public SimpleStringProperty getNameAndTeam() {
+		// TODO Auto-generated method stub
+		return new SimpleStringProperty(name + " (" + getTeam().getName()+")");
+	}
+
+	public void reset() {
+		initialise();
+	}
+	
+	public String toString() {
+		return name;
 	}
 	
 }
