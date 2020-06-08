@@ -166,7 +166,7 @@ public class Round {
 			scores.put(getNonBettingTeam(), 0);
 		} else {
 			scores.put(getBettingTeam(), (-1)*currBet.calcBetPoints());
-			scores.put(getNonBettingTeam(), tricksWon.get(getNonBettingTeam()));
+			scores.put(getNonBettingTeam(), tricksWon.get(getNonBettingTeam())*10);
 		}
 		
 		return scores;
